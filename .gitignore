@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+*.js
+*.js.map
+*.d.ts
+coverage/
+.vscode/
+.idea/
+.env
+.env.*
+!.env.example
+yarn.lock
+package-lock.json   
