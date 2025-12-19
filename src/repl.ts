@@ -1,5 +1,6 @@
 import { createInterface } from "node:readline";
 import { stdin, stdout } from "node:process";
+import { getCommands } from "./command.js";
 
 const rl = createInterface({
     input: stdin,
@@ -19,9 +20,19 @@ export function startREPL() {
             rl.prompt();
             return;
         }
-        // otherwise, clean input into array and output first word to console
+        // otherwise, clean input into array and use first word as command
         const wordsArray = cleanInput(input);
-        console.log(`Your command was: ${wordsArray[0]}`);
+        const command = wordsArray[0];
+        const commands = getCommands();
+        if (command in commands) {
+            try {
+                commands[command].callback(commands);
+            } catch (error) {
+                console.log(`Error: ${error}`);
+            }
+        } else {
+            console.log("Unknown command");
+        }
         rl.prompt();
     })
 }
