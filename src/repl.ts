@@ -8,9 +8,9 @@ export function cleanInput(input: string): string[] {
     .filter((word) => word !== "");
 }
 
-export function startREPL(state: State) {
+export async function startREPL(state: State) {
     state.readline.prompt();
-    state.readline.on("line", (input: string) => {
+    state.readline.on("line", async (input: string) => {
         // if empty (including blank spaces), prompt and early return
         if (!input.trim()) {
             state.readline.prompt();
@@ -22,9 +22,9 @@ export function startREPL(state: State) {
         const commands = state.commands;
         if (command in commands) {
             try {
-                commands[command].callback(state);
+                await commands[command].callback(state);
             } catch (error) {
-                console.log(`Error: ${error}`);
+                console.log(`${(error as Error).message}`);
             }
         } else {
             console.log(`Unknown command: "${command}". Type "help" for a list of commands.`);
