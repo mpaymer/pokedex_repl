@@ -1,12 +1,26 @@
+import { Cache } from "./pokecache.js";
+
 export class PokeAPI {
     private static readonly baseURL = "https://pokeapi.co/api/v2";
+    #pokeCache: Cache;
+    constructor(cacheInterval: number) {
+        this.#pokeCache = new Cache(cacheInterval);
+    }
 
-    constructor() {}
+    closeCache() {
+        this.#pokeCache.stopReapLoop();
+    }
 
     async fetchLocations(pageURL?: string): Promise<ShallowLocations> {
         // pageURL defines the ENTIRE route you need to go to
-        const url = pageURL || `${PokeAPI.baseURL}/location-area`;
-        
+        const url = pageURL || `${PokeAPI.baseURL}/location-area/?offset=0&limit=20`;
+        // check if locations is in cache
+        // use URL as cache key
+        const cachedLocations = this.#pokeCache.get<ShallowLocations>(url);
+        if (cachedLocations) {
+            return cachedLocations;
+        }
+    
         try {
             const response = await fetch(url);
 
@@ -15,6 +29,9 @@ export class PokeAPI {
             }
 
             const locations: ShallowLocations = await response.json();
+            // Add location to cache
+            this.#pokeCache.add<ShallowLocations>(url, locations);
+
             return locations;
         } catch (error) {
             throw new Error(`Error fetching locations: ${(error as Error).message}`);
@@ -23,7 +40,14 @@ export class PokeAPI {
 
     async fetchLocation(locationName: string): Promise<Location> {
         const url = `${PokeAPI.baseURL}/location-area/${locationName}`;
-        
+
+        // check if location is in cache
+        // use URL as cache key
+        const cachedLocation = this.#pokeCache.get<Location>(url);
+        if (cachedLocation) {
+            return cachedLocation;
+        }
+
         try {
             const response = await fetch(url);
 
@@ -32,6 +56,10 @@ export class PokeAPI {
             }
 
             const location: Location = await response.json();
+
+            // Add location to cache
+            this.#pokeCache.add<Location>(url, location);
+
             return location;
         } catch (error) {
             throw new Error(`Error fetching location: ${(error as Error).message}`);
