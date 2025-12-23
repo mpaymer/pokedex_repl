@@ -22,7 +22,7 @@ export async function startREPL(state: State) {
         const commands = state.commands;
         if (command in commands) {
             try {
-                await commands[command].callback(state);
+                await commands[command].callback(state, ...wordsArray.slice(1));
             } catch (error) {
                 console.log(`${(error as Error).message}`);
             }
